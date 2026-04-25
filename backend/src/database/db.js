@@ -1,20 +1,13 @@
-// config/db.js
+const mongoose = require('mongoose')
 
-const mongoose = require("mongoose");
-
-function connectDB() {
-  mongoose.connect("mongodb://127.0.0.1:27017/authDB", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
-
-  mongoose.connection.on("connected", function() {
-    console.log("MongoDB connected");
-  });
-
-  mongoose.connection.on("error", function(err) {
-    console.log("MongoDB error:", err);
-  });
+function connectDB(){
+    mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('DB Connected!')
+    })
+    .catch((err) => {
+        console.log('DB Connecttion Error: ', err)
+    })
 }
 
-module.exports = connectDB;
+module.exports = connectDB
