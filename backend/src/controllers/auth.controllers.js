@@ -1,9 +1,9 @@
-const User = require("../models/user.model"); // ✅ capital
+const User = require("../models/user.model");  
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 async function registerAdmin(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   const isAlreadyExists = await User.exists({ email });
 
@@ -15,18 +15,19 @@ async function registerAdmin(req, res) {
 
   const hashedPassword = await bcrypt.hash(
     password,
-    Number(process.env.SALT_ROUNDS)
+    Number(process.env.SALT_ROUNDS) || 10
   );
 
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
+    role: role || 'volunteer'
   });
 
   const token = jwt.sign(
     { id: user._id },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || 'supersecretkey123',
     { expiresIn: "1h" }
   );
 
@@ -36,8 +37,9 @@ async function registerAdmin(req, res) {
     message: "Admin successfully registered!",
     admin: {
       id: user._id,
-      name: user.name,   // ⚠️ you used fullName earlier (not in schema)
+      name: user.name,
       email: user.email,
+      role: user.role
     },
   });
 }
@@ -45,7 +47,7 @@ async function registerAdmin(req, res) {
 async function loginAdmin(req, res) {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }); // ✅ use User
+  const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(400).json({
@@ -63,7 +65,7 @@ async function loginAdmin(req, res) {
 
   const token = jwt.sign(
     { id: user._id },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || 'supersecretkey123',
     { expiresIn: "1h" }
   );
 
@@ -75,6 +77,7 @@ async function loginAdmin(req, res) {
       id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role
     },
   });
 }
